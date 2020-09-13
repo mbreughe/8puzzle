@@ -60,6 +60,11 @@ public class Board {
         }
     }
 
+    public Board clone() {
+        Board new_board = new Board(mTiles);
+        return new_board;
+    }
+
     // string representation of this board
     public String toString() {
         String repr = "" + getN() + "\n";
