@@ -8,6 +8,7 @@ import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 
 public class Board {
@@ -173,7 +174,16 @@ public class Board {
 
     // a board that is obtained by exchanging any pair of tiles
     public Board twin() {
-        return this;
+        int[] src = new int[2];
+        int[] dst = new int[2];
+        src[0] = src[1] = dst[0] = dst[1] = 0;
+        while (Arrays.equals(src, dst)) {
+            src[0] = (int) (Math.random() * getN());
+            src[1] = (int) (Math.random() * getN());
+            dst[0] = (int) (Math.random() * getN());
+            dst[1] = (int) (Math.random() * getN());
+        }
+        return swapTiles(src, dst);
     }
 
     public static int[][] readTiles(String filename) {
@@ -210,5 +220,9 @@ public class Board {
         for (Board n : x.neighbors()) {
             StdOut.println(n.toString());
         }
+
+        StdOut.println("Create swap: ");
+        Board x_t = x.twin();
+        StdOut.println(x_t.toString());
     }
 }
