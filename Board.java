@@ -153,7 +153,7 @@ public class Board {
 
         ArrayList<Board> neighbies = new ArrayList<Board>();
 
-        if (X - 1 > 0) {
+        if (X - 1 >= 0) {
             int[] newCoords = new int[2];
             newCoords[0] = X - 1;
             newCoords[1] = Y;
@@ -167,7 +167,7 @@ public class Board {
             neighbies.add(swapTiles(coords, newCoords));
         }
 
-        if (Y - 1 > 0) {
+        if (Y - 1 >= 0) {
             int[] newCoords = new int[2];
             newCoords[0] = X;
             newCoords[1] = Y - 1;
