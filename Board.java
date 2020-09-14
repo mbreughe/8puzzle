@@ -112,7 +112,14 @@ public class Board {
 
     // is this board the goal board?
     public boolean isGoal() {
-        return false;
+        for (int i = 0; i < getN(); i++) {
+            for (int j = 0; j < getN(); j++) {
+                if (mTiles[i][j] != goal(i, j)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     // does this board equal y?
