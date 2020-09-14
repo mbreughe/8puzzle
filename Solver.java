@@ -11,22 +11,25 @@ import java.util.ArrayDeque;
 
 public class Solver {
     public static final boolean DEV_MODE = false;
+    private boolean DBG_processingGood = true;
 
     private Node mRoot;
-    private MinPQ<Node> pQ;
+    private boolean mFinishedProcessing = false;
     private Iterable<Board> mCachedSolution = null;
+    private int mAbsoluteMaxSteps = -1;
 
     // find a solution to the initial board (using the A* algorithm)
     public Solver(Board initial) {
         mRoot = new Node(initial, null);
-        pQ = new MinPQ<Node>();
-
+        mAbsoluteMaxSteps = 1;
+        for (int i = 2; i < initial.dimension() * initial.dimension(); i++) {
+            mAbsoluteMaxSteps *= i;
+        }
     }
 
     // is the initial board solvable? (see below)
     public boolean isSolvable() {
-        StdOut.println("WARNING: UNIMPLEMENTED!");
-        return true;
+        return solution() != null;
     }
 
     // min number of moves to solve initial board; -1 if unsolvable
@@ -39,62 +42,77 @@ public class Solver {
         for (Board n : solution()) {
             count += 1;
         }
-        
+
         // Subtract one for the initial state
         count -= 1;
 
         return count;
     }
 
-    // sequence of boards in a shortest solution; null if unsolvable
-    public Iterable<Board> solution() {
-        if (!isSolvable()) {
-            return null;
+    private Node processNextNode(MinPQ<Node> pQ) {
+        Node currentNode = pQ.delMin();
+        Board currentBoard = currentNode.getBoard();
+
+        if (DEV_MODE) {
+            StdOut.println("Processing: " + (DBG_processingGood ? "Original Puzzle" : "Evil Twin"));
+            StdOut.println("Adding neighbours");
         }
 
-        if (mCachedSolution != null) {
+        for (Board n : currentBoard.neighbors()) {
+            if (DEV_MODE) {
+                StdOut.println("Adding following board: ");
+                StdOut.println(n);
+                StdOut.println("PQ size before insert: " + pQ.size());
+            }
+
+            pQ.insert(new Node(n, currentNode));
+        }
+        return currentNode;
+    }
+
+    // sequence of boards in a shortest solution; null if unsolvable
+    public Iterable<Board> solution() {
+        if (mFinishedProcessing) {
             return mCachedSolution;
         }
 
-        pQ.insert(mRoot);
+        DBG_processingGood = true;
+        MinPQ<Node> goodPQ = new MinPQ<Node>();
+        DBG_processingGood = false;
+        MinPQ<Node> badPQ = new MinPQ<Node>();
 
-        while (!pQ.isEmpty()) {
-            Node currentNode = pQ.delMin();
-            Board currentBoard = currentNode.getBoard();
+        goodPQ.insert(mRoot);
+        badPQ.insert(new Node(mRoot.getBoard().twin(), null));
 
-            if (DEV_MODE) {
-                StdOut.println("Examining Board: ");
-                StdOut.println(currentBoard);
-                StdOut.println("Is goal? " + currentBoard.isGoal());
-                StdOut.println("Manhattan: " + currentBoard.manhattan());
+        while (!goodPQ.isEmpty() || !badPQ.isEmpty()) {
+            Node currentGoodNode = processNextNode(goodPQ);
+            Node currentBadNode = processNextNode(badPQ);
+
+
+            Board currentGoodBoard = currentGoodNode.getBoard();
+            Board currentBadBoard = currentBadNode.getBoard();
+
+            boolean unsolvable = currentBadBoard.isGoal() ||
+                    (currentGoodNode.getSteps() > mAbsoluteMaxSteps
+                            || currentBadNode.getSteps() > mAbsoluteMaxSteps);
+
+            if (unsolvable) {
+                mFinishedProcessing = true;
+                mCachedSolution = null;
+                return mCachedSolution;
             }
 
-
-            if (currentBoard.isGoal()) {
+            if (currentGoodBoard.isGoal()) {
                 ArrayDeque<Board> chain = new ArrayDeque<Board>();
-                while (currentNode != null) {
-                    currentBoard = currentNode.getBoard();
-                    chain.addFirst(currentBoard.clone());
-                    currentNode = currentNode.getParent();
+                while (currentGoodNode != null) {
+                    currentGoodBoard = currentGoodNode.getBoard();
+                    chain.addFirst(currentGoodBoard.clone());
+                    currentGoodNode = currentGoodNode.getParent();
                 }
+
+                mFinishedProcessing = true;
                 mCachedSolution = chain.clone();
-                return chain;
-            }
-
-            else {
-                if (DEV_MODE) {
-                    StdOut.println("Adding neighbours");
-                }
-
-                for (Board n : currentBoard.neighbors()) {
-                    if (DEV_MODE) {
-                        StdOut.println("Adding following board: ");
-                        StdOut.println(n);
-                        StdOut.println("PQ size before insert: " + pQ.size());
-                    }
-
-                    pQ.insert(new Node(n, currentNode));
-                }
+                return mCachedSolution;
             }
         }
 

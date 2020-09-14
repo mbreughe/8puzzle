@@ -22,6 +22,10 @@ public class Node implements Comparator<Node>, Comparable<Node> {
         }
     }
 
+    public int getSteps() {
+        return mSteps;
+    }
+
     public int getWeight() {
         return mBoard.manhattan() + mSteps;
     }
