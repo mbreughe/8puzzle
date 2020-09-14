@@ -4,7 +4,9 @@
  *  Description:
  **************************************************************************** */
 
-public class Node {
+import java.util.Comparator;
+
+public class Node implements Comparator<Node>, Comparable<Node> {
     private Node mParent;
     private Board mBoard;
     private int mSteps;
@@ -24,4 +26,19 @@ public class Node {
         return mBoard.manhattan() + mSteps;
     }
 
+    public int compare(Node a, Node b) {
+        return a.getWeight() - b.getWeight();
+    }
+
+    public int compareTo(Node x) {
+        return compare(this, x);
+    }
+
+    public Node getParent() {
+        return mParent;
+    }
+
+    public Board getBoard() {
+        return mBoard.clone();
+    }
 }
