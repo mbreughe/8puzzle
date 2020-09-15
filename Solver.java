@@ -4,13 +4,16 @@
  *  Description:
  **************************************************************************** */
 
+import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.StdOut;
 
 import java.util.ArrayDeque;
+import java.util.Comparator;
+
 
 public class Solver {
-    public static final boolean DEV_MODE = false;
+    private static final boolean DEV_MODE = false;
     private boolean DBG_processingGood = true;
 
     private Node mRoot;
@@ -106,7 +109,7 @@ public class Solver {
                 ArrayDeque<Board> chain = new ArrayDeque<Board>();
                 while (currentGoodNode != null) {
                     currentGoodBoard = currentGoodNode.getBoard();
-                    chain.addFirst(currentGoodBoard.clone());
+                    chain.addFirst(currentGoodBoard);
                     currentGoodNode = currentGoodNode.getParent();
                 }
 
@@ -122,7 +125,14 @@ public class Solver {
     // test client (see below)
     public static void main(String[] args) {
         // create initial board from file
-        int[][] tiles = Board.readTiles(args[0]);
+        In in = new In(args[0]);
+        int n = in.readInt();
+        int[][] tiles = new int[n][n];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                tiles[i][j] = in.readInt();
+            }
+        }
         Board initial = new Board(tiles);
 
         // solve the puzzle
@@ -135,6 +145,47 @@ public class Solver {
             StdOut.println("Minimum number of moves = " + solver.moves());
             for (Board board : solver.solution())
                 StdOut.println(board);
+        }
+    }
+
+    private class Node implements Comparator<Node>, Comparable<Node> {
+        private Node mParent;
+        private Board mBoard;
+        private int mSteps;
+
+        public Node(Board board, Node parent) {
+            mBoard = board;
+            mParent = parent;
+            if (parent == null) {
+                mSteps = 0;
+            }
+            else {
+                mSteps = parent.mSteps + 1;
+            }
+        }
+
+        public int getSteps() {
+            return mSteps;
+        }
+
+        public int getWeight() {
+            return mBoard.manhattan() + mSteps;
+        }
+
+        public int compare(Node a, Node b) {
+            return a.getWeight() - b.getWeight();
+        }
+
+        public int compareTo(Node x) {
+            return compare(this, x);
+        }
+
+        public Node getParent() {
+            return mParent;
+        }
+
+        public Board getBoard() {
+            return mBoard;
         }
     }
 }

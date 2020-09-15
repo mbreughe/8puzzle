@@ -60,11 +60,6 @@ public class Board {
         }
     }
 
-    public Board clone() {
-        Board new_board = new Board(mTiles);
-        return new_board;
-    }
-
     // string representation of this board
     public String toString() {
         String repr = "" + getN() + "\n";
@@ -198,8 +193,9 @@ public class Board {
         return swapTiles(src, dst);
     }
 
-    public static int[][] readTiles(String filename) {
-        In in = new In(filename);
+    // unit testing (not graded)
+    public static void main(String[] args) {
+        In in = new In(args[0]);
         int n = in.readInt();
         int[][] tiles = new int[n][n];
         for (int i = 0; i < n; i++) {
@@ -207,12 +203,6 @@ public class Board {
                 tiles[i][j] = in.readInt();
             }
         }
-        return tiles;
-    }
-
-    // unit testing (not graded)
-    public static void main(String[] args) {
-        int[][] tiles = readTiles(args[0]);
         int[][] tiles_mod = new int[tiles.length][];
         for (int i = 0; i < tiles.length; i++) {
             tiles_mod[i] = tiles[i].clone();
@@ -229,8 +219,8 @@ public class Board {
         StdOut.println("Equal to small mod? " + (x.equals(y)));
         StdOut.println("Neighbors:");
 
-        for (Board n : x.neighbors()) {
-            StdOut.println(n.toString());
+        for (Board nb : x.neighbors()) {
+            StdOut.println(nb.toString());
         }
 
         StdOut.println("Create swap: ");
