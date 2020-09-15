@@ -9,6 +9,7 @@ import edu.princeton.cs.algs4.StdOut;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 
 
 public class Board {
@@ -83,6 +84,10 @@ public class Board {
         int distance = 0;
         for (int i = 0; i < getN(); i++) {
             for (int j = 0; j < getN(); j++) {
+                // We don't count the 0-tile
+                if (mTiles[i][j] == 0) {
+                    continue;
+                }
                 if (mTiles[i][j] != goal(i, j)) {
                     distance += 1;
                 }
@@ -96,7 +101,12 @@ public class Board {
         int distance = 0;
         for (int i = 0; i < getN(); i++) {
             for (int j = 0; j < getN(); j++) {
-                int[] coords = findTile(goal(i, j));
+                int goalValue = goal(i, j);
+                // We don't count Manhattan distance for the 0-tile
+                if (goalValue == 0) {
+                    continue;
+                }
+                int[] coords = findTile(goalValue);
 
                 distance += Math.abs(coords[0] - i) + Math.abs(coords[1] - j);
             }
@@ -181,14 +191,17 @@ public class Board {
 
     // a board that is obtained by exchanging any pair of tiles
     public Board twin() {
+        int seed = 0xdeadbeef;
+        Random generator = new Random(seed);
         int[] src = new int[2];
         int[] dst = new int[2];
         src[0] = src[1] = dst[0] = dst[1] = 0;
-        while (Arrays.equals(src, dst)) {
-            src[0] = (int) (Math.random() * getN());
-            src[1] = (int) (Math.random() * getN());
-            dst[0] = (int) (Math.random() * getN());
-            dst[1] = (int) (Math.random() * getN());
+        while (Arrays.equals(src, dst) || mTiles[src[0]][src[1]] == 0
+                || mTiles[dst[0]][dst[1]] == 0) {
+            src[0] = (int) (generator.nextDouble() * getN());
+            src[1] = (int) (generator.nextDouble() * getN());
+            dst[0] = (int) (generator.nextDouble() * getN());
+            dst[1] = (int) (generator.nextDouble() * getN());
         }
         return swapTiles(src, dst);
     }
@@ -223,7 +236,7 @@ public class Board {
             StdOut.println(nb.toString());
         }
 
-        StdOut.println("Create swap: ");
+        StdOut.println("Create twin: ");
         Board x_t = x.twin();
         StdOut.println(x_t.toString());
     }
