@@ -19,15 +19,10 @@ public class Solver {
     private Node mRoot;
     private boolean mFinishedProcessing = false;
     private Iterable<Board> mCachedSolution = null;
-    private int mAbsoluteMaxSteps = -1;
 
     // find a solution to the initial board (using the A* algorithm)
     public Solver(Board initial) {
         mRoot = new Node(initial, null);
-        mAbsoluteMaxSteps = 1;
-        for (int i = 2; i < initial.dimension() * initial.dimension(); i++) {
-            mAbsoluteMaxSteps *= i;
-        }
     }
 
     // is the initial board solvable? (see below)
@@ -79,27 +74,25 @@ public class Solver {
             return mCachedSolution;
         }
 
-        DBG_processingGood = true;
+
         MinPQ<Node> goodPQ = new MinPQ<Node>();
-        DBG_processingGood = false;
+
         MinPQ<Node> badPQ = new MinPQ<Node>();
 
         goodPQ.insert(mRoot);
         badPQ.insert(new Node(mRoot.getBoard().twin(), null));
 
         while (!goodPQ.isEmpty() || !badPQ.isEmpty()) {
+            DBG_processingGood = true;
             Node currentGoodNode = processNextNode(goodPQ);
+            DBG_processingGood = false;
             Node currentBadNode = processNextNode(badPQ);
 
 
             Board currentGoodBoard = currentGoodNode.getBoard();
             Board currentBadBoard = currentBadNode.getBoard();
 
-            boolean unsolvable = currentBadBoard.isGoal() ||
-                    (currentGoodNode.getSteps() > mAbsoluteMaxSteps
-                            || currentBadNode.getSteps() > mAbsoluteMaxSteps);
-
-            if (unsolvable) {
+            if (currentBadBoard.isGoal()) {
                 mFinishedProcessing = true;
                 mCachedSolution = null;
                 return mCachedSolution;
