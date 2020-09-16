@@ -14,6 +14,10 @@ import java.util.Random;
 
 public class Board {
     private int[][] mTiles;
+    private boolean manhattanCalculated = false;
+    private boolean hammingCalculated = false;
+    private int manhDistance_cache = 0;
+    private int hamDistance_cache = 0;
 
     private int getN() {
         return mTiles.length;
@@ -55,6 +59,9 @@ public class Board {
     // create a board from an n-by-n array of tiles,
     // where tiles[row][col] = tile at (row, col)
     public Board(int[][] tiles) {
+        if (tiles == null) {
+            throw new RuntimeException("exit now");
+        }
         mTiles = new int[tiles.length][];
         for (int i = 0; i < tiles.length; i++) {
             mTiles[i] = tiles[i].clone();
@@ -81,7 +88,10 @@ public class Board {
 
     // number of tiles out of place
     public int hamming() {
-        int distance = 0;
+        if (hammingCalculated) {
+            return hamDistance_cache;
+        }
+        hamDistance_cache = 0;
         for (int i = 0; i < getN(); i++) {
             for (int j = 0; j < getN(); j++) {
                 // We don't count the 0-tile
@@ -89,16 +99,22 @@ public class Board {
                     continue;
                 }
                 if (mTiles[i][j] != goal(i, j)) {
-                    distance += 1;
+                    hamDistance_cache += 1;
                 }
             }
         }
-        return distance;
+        hammingCalculated = true;
+
+        return hamDistance_cache;
     }
 
     // sum of Manhattan distances between tiles and goal
     public int manhattan() {
-        int distance = 0;
+        if (manhattanCalculated) {
+            return manhDistance_cache;
+        }
+
+        manhDistance_cache = 0;
         for (int i = 0; i < getN(); i++) {
             for (int j = 0; j < getN(); j++) {
                 int goalValue = goal(i, j);
@@ -108,11 +124,12 @@ public class Board {
                 }
                 int[] coords = findTile(goalValue);
 
-                distance += Math.abs(coords[0] - i) + Math.abs(coords[1] - j);
+                manhDistance_cache += Math.abs(coords[0] - i) + Math.abs(coords[1] - j);
             }
         }
+        manhattanCalculated = true;
 
-        return distance;
+        return manhDistance_cache;
     }
 
     // is this board the goal board?
@@ -129,10 +146,22 @@ public class Board {
 
     // does this board equal y?
     public boolean equals(Object y) {
+        if (y == null) {
+            throw new RuntimeException("comparing to null Board");
+        }
+
         if (this.getClass() != y.getClass()) {
             return false;
         }
-        Board other = (Board) y;
+
+        Board other;
+
+        try {
+            other = (Board) y;
+        }
+        catch (ClassCastException e) {
+            return false;
+        }
 
         if (other.dimension() != dimension()) {
             return false;

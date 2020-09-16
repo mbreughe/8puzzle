@@ -51,20 +51,26 @@ public class Solver {
         Node currentNode = pQ.delMin();
         Board currentBoard = currentNode.getBoard();
 
-        if (DEV_MODE) {
+        if (DEV_MODE && DBG_processingGood) {
             StdOut.println("Processing: " + (DBG_processingGood ? "Original Puzzle" : "Evil Twin"));
+            StdOut.println(currentBoard);
             StdOut.println("Adding neighbours");
         }
 
         for (Board n : currentBoard.neighbors()) {
-            if (DEV_MODE) {
-                StdOut.println("Adding following board: ");
-                StdOut.println(n);
-                StdOut.println("PQ size before insert: " + pQ.size());
+            Node parentNode = currentNode.getParent();
+            if (parentNode != null && n.equals(parentNode.getBoard())) {
+                continue;
             }
 
             pQ.insert(new Node(n, currentNode));
+
+            if (DEV_MODE && DBG_processingGood) {
+                StdOut.println("Adding following board: ");
+                StdOut.println(n);
+            }
         }
+
         return currentNode;
     }
 
